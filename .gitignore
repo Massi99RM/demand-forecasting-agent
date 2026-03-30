@@ -1,0 +1,20 @@
+# Environment and API keys
+.env
+
+# Dataset 
+data/raw/train.csv
+
+# Agent-generated charts 
+outputs/*.png
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
