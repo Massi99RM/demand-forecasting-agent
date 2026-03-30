@@ -179,18 +179,6 @@ def evaluate_model(y_true: np.ndarray | pd.Series,y_pred: np.ndarray,) -> dict:
     """
     Compute evaluation metrics for demand forecasting.
 
-    MAE (Mean Absolute Error):
-      Formula: mean(|actual - predicted|)
-      Meaning: "On average, our forecast is off by X units."
-
-    RMSE (Root Mean Squared Error):
-      Formula: sqrt(mean((actual - predicted)²))
-      Meaning: Like MAE, but penalizes LARGE errors more heavily.
-
-    MAPE (Mean Absolute Percentage Error):
-      Formula: mean(|actual - predicted| / actual) × 100
-      Meaning: "On average, our forecast is off by X%."
-
     Parameters
     ----------
     y_true : array-like

@@ -62,9 +62,6 @@ def add_lag_features(df: pd.DataFrame,lags: tuple = None,) -> pd.DataFrame:
     """
     Add lagged sales values as features.
 
-    A "lag" is simply "what was the sales value N days ago?" This gives
-    the model direct access to recent history.
-
     Parameters
     ----------
     df : pd.DataFrame
@@ -86,10 +83,10 @@ def add_lag_features(df: pd.DataFrame,lags: tuple = None,) -> pd.DataFrame:
     grouped = df.groupby(["store", "item"])["sales"]
 
     for lag in lags:
-        # .shift(lag) moves values DOWN by `lag` positions.
+        # .shift(lag) moves values down by `lag` positions.
         # Row i gets the sales value from row (i - lag).
         # For lag=1: today's row gets yesterday's sales.
-        # This naturally creates NaN for the first `lag` rows of each
+        # This creates NaN for the first `lag` rows of each
         # group (there's no "7 days ago" for the first week).
         df[f"sales_lag_{lag}"] = grouped.shift(lag)
 
@@ -128,7 +125,7 @@ def add_rolling_features(df: pd.DataFrame,windows: tuple = None,) -> pd.DataFram
         # min_periods=1 means the rolling window starts computing as
         # soon as it has at least 1 data point (instead of returning
         # NaN until the full window is filled). This reduces the number
-        # of NaN rows we lose at the start of each series.
+        # of NaN rows lost at the start of each series.
         df[f"sales_rolling_mean_{window}"] = grouped.transform(lambda x: x.rolling(window=window, min_periods=1).mean().shift(1))  
 
         df[f"sales_rolling_std_{window}"] = grouped.transform(lambda x: x.rolling(window=window, min_periods=1).std().shift(1))  

@@ -1,5 +1,5 @@
 """
-Main — entry point for the Demand Forecasting Agent.
+Entry point for the Demand Forecasting Agent.
 
 Run this to start an interactive conversation with the agent
 
@@ -14,7 +14,7 @@ REQUIREMENTS:
   - ANTHROPIC_API_KEY environment variable set
   - Dependencies installed: pip install -r requirements.txt
 
-You can also set your API key in a .env file:
+An API key must be set in a .env file:
     ANTHROPIC_API_KEY=sk-ant-...
 """
 
@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from src.agent.graph import build_agent, run_agent_query
 
-# Load .env file if it exists (for ANTHROPIC_API_KEY in my case)
+# Load .env file if it exists
 load_dotenv()
 
 

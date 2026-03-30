@@ -1,5 +1,5 @@
 """
-Configuration — single source of truth for the entire project.
+Configuration for the entire project.
 """
 
 from pathlib import Path
@@ -64,7 +64,7 @@ class Config:
     TARGET: str = "sales"
 
     # ── Features to Exclude from Model Input ─────────────────────────────
-    # These columns are in the DataFrame but should not be fed to XGBoost.
+    # These columns are in the DataFrame but should not be fed to XGBoost:
     # 'date' is used for splitting.
     # 'sales' is the target.
     EXCLUDE_COLS: tuple = ("date", "sales")

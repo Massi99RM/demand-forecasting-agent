@@ -95,8 +95,6 @@ def plot_sales_trend(df: pd.DataFrame,store: int,item: int,) -> str:
     )
 
     # Add a 30-day rolling average to show the trend clearly.
-    # The raw daily line is noisy; the rolling average reveals the
-    # underlying pattern (uptrend, seasonality, etc.).
     rolling_avg = subset["sales"].rolling(window=30, min_periods=1).mean()
     ax.plot(
         subset["date"], rolling_avg,
@@ -497,8 +495,8 @@ if __name__ == "__main__":
     from src.data_loader import load_data
     from src.feature_engineering import build_features
     from src.model import (
-        prepare_train_test, train_model, predict,
-        evaluate_model, get_feature_importance,
+        prepare_train_test, train_model, 
+        predict, get_feature_importance,
     )
     from src.feature_engineering import get_feature_names
 

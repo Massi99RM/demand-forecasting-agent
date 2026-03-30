@@ -40,8 +40,6 @@ def load_data(path: Path = None) -> pd.DataFrame:
         path = CFG.RAW_DATA_PATH
 
     # ── Check file exists ────────────────────────────────────────────
-    # This is the #1 error new users hit. A clear message saves 10 min
-    # of confusion vs. a generic FileNotFoundError traceback.
     if not path.exists():
         raise FileNotFoundError(
             f"Dataset not found at: {path}\n\n"
@@ -52,8 +50,6 @@ def load_data(path: Path = None) -> pd.DataFrame:
         )
 
     # ── Load CSV ─────────────────────────────────────────────────────
-    # parse_dates=['date'] converts the string column to datetime64
-    # automatically.
     df = pd.read_csv(path, parse_dates=["date"])
 
     # ── Validate expected columns ────────────────────────────────────

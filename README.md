@@ -71,7 +71,7 @@ User (natural language question)
 
 **XGBoost over LSTM/Neural Networks:** Tree-based models consistently outperform deep learning on structured tabular data with hand-crafted features. XGBoost trains in seconds, provides interpretable feature importances, and doesn't require normalization or sequence windowing. LSTMs would add significant complexity for marginal benefit on this data type.
 
-**Time-based split over random split:** The train/test split is by date (train up to Sept 2017, test Oct-Dec 2017), not random. Random splitting would leak future information into training data. In production, you always predict forward in time — evaluation must reflect this.
+**Time-based split over random split:** The train/test split is by date (train up to Sept 2017, test Oct-Dec 2017), not random. Random splitting would leak future information into training data, predicting forward in time.
 
 **Shift inside groupby transform:** Rolling features use `.transform(lambda x: x.rolling(...).mean().shift(1))` with the shift inside the transform. Placing shift outside would cause cross-group leakage — the first row of one product would incorrectly use another product's last rolling value.
 
@@ -79,7 +79,7 @@ User (natural language question)
 
 ## Dataset
 
-[Store Item Demand Forecasting](https://www.kaggle.com/c/demand-forecasting-kernels-only) from Kaggle.
+[Store Item Demand Forecasting] from Kaggle.
 
 - 10 stores × 50 items × 1,826 days = 913,000 rows
 - Daily sales data from 2013-01-01 to 2017-12-31
@@ -142,7 +142,7 @@ demand-forecasting-agent/
 ### Prerequisites
 - Python 3.10+
 - An Anthropic API key ([get one here](https://console.anthropic.com/))
-> **Note:** The agent is configured for Claude (Anthropic). The agent architecture is LLM-agnostic — switching to OpenAI or Gemini requires only changing the `get_llm()` function in `main.py`and the env file.
+> **Note:** The agent is configured for Claude (Anthropic). The agent architecture is LLM-agnostic — switching to other API's requires only changing the `get_llm()` function in `main.py`and the env file.
 
 ### Setup
 
@@ -208,12 +208,3 @@ python tests/test_agent.py
    - ~700 unit shortfall over 3 months
    Recommendation: increase safety stock by 60-70%...
 ```
-
-## What I'd Improve
-
-- **Add price and promotion features** — the current dataset lacks these, but they're among the strongest demand drivers in real supply chain systems
-- **Implement Prophet/ARIMA baselines** — to provide actual model comparisons rather than estimated ones
-- **Add confidence intervals** — point forecasts are less useful than prediction intervals for safety stock calculations
-- **Per-item model tuning** — high-volatility products might benefit from different hyperparameters or ensemble approaches
-- **Persist trained models** — save to disk with joblib so the model survives process restarts
-- **Streaming responses** — show the agent's reasoning in real-time instead of waiting for the full response

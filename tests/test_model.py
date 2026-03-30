@@ -7,8 +7,6 @@ These tests verify:
 3. Evaluation metrics are computed correctly
 4. Feature importance extraction works
 5. Predictions are non-negative (demand can't be < 0)
-
-Run:  python tests/test_model.py
 """
 
 import sys
@@ -36,7 +34,7 @@ def make_synthetic_featured_df() -> pd.DataFrame:
 
     2 stores × 2 items × 730 days (2 years) = 2,920 rows.
     After feature engineering drops ~28 NaN rows per series,
-    we get ~2,808 rows — plenty for train/test splitting.
+    approximately ~2,808 rows — enough for train/test splitting.
     """
     dates = pd.date_range("2016-01-01", "2017-12-31", freq="D")
     np.random.seed(42)
@@ -148,7 +146,7 @@ def test_evaluate_model_correctness():
     """Verify metrics are computed correctly with known values."""
     print("\n── Testing evaluate_model() correctness ──")
 
-    # Known values where we can compute metrics by hand:
+    # Known values where it's possible to compute metrics by hand:
     # actual:    [10, 20, 30]
     # predicted: [12, 18, 33]
     # errors:    [ 2,  2,  3]

@@ -86,7 +86,7 @@ def test_time_features():
     # Jan 7, 2017 is a Saturday (dayofweek=5)
     row5 = result.iloc[5]  # 6th day = Jan 7
     assert row5["day_of_week"] == 5
-    assert row5["is_weekend"] == 1  # Saturday IS weekend
+    assert row5["is_weekend"] == 1  # Saturday is weekend
 
     # Original data should not be modified
     assert "day_of_week" not in df.columns, "Original df was modified!"
@@ -196,7 +196,7 @@ def test_rolling_no_leakage():
     that row's actual sales value. This is the data leakage test.
 
     For each row, the rolling_mean_N (shifted by 1) should
-    be computable from ONLY the previous rows' sales values.
+    be computable from only the previous rows' sales values.
     """
     print("\n── Testing rolling features: NO DATA LEAKAGE ──")
 
@@ -251,7 +251,7 @@ def test_holiday_features():
     """Verify holiday detection."""
     print("\n── Testing add_holiday_features() ──")
 
-    # Create a DataFrame that spans a known US holiday
+    # Create a DataFrame that spans a known USA holiday
     # For example, July 4, 2017 is Independence Day
     dates = pd.date_range("2017-07-01", "2017-07-07", freq="D")
     df = pd.DataFrame({
@@ -267,7 +267,7 @@ def test_holiday_features():
     july4_row = result[result["date"] == "2017-07-04"].iloc[0]
     assert july4_row["is_holiday"] == 1, "July 4 should be flagged as holiday"
 
-    # July 3 should nit be a holiday
+    # July 3 should not be a holiday
     july3_row = result[result["date"] == "2017-07-03"].iloc[0]
     assert july3_row["is_holiday"] == 0, "July 3 should NOT be a holiday"
 

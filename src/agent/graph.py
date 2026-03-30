@@ -5,9 +5,6 @@ The loop:
   User message → agent (thinks) → calls a tool → tools (executes)
   → agent (reads result, thinks again) → calls another tool OR
   → responds to the user
-
-This loop continues until the agent decides it has enough information
-to answer the user's question
 """
 
 import sys

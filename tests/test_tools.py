@@ -7,8 +7,6 @@ These tests verify that:
 3. Tools that require a trained model fail gracefully before training
 4. Tools produce meaningful output after proper setup
 5. The shared AgentState is correctly updated across tool calls
-
-Run:  python tests/test_tools.py
 """
 
 import sys
@@ -19,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pandas as pd
 import numpy as np
 
-# Create synthetic data BEFORE importing tools (they try to load real data)
+# Create synthetic data before importing tools
 from config import CFG
 
 
@@ -47,7 +45,7 @@ def create_synthetic_data():
 print("── Setting up test data ──")
 create_synthetic_data()
 
-# Now import tools (they'll find the synthetic data)
+# Import tools 
 from src.agent import state
 from src.tools.data_tools import explore_dataset, get_item_details
 from src.tools.forecast_tools import (
@@ -147,7 +145,7 @@ def test_predict_after_training():
     assert "forecast" in result.lower() or "demand" in result.lower()
     assert "actual" in result.lower()
     assert "predicted" in result.lower()
-    # Make sure it's not an ERROR response (starts with "Error:")
+    # Make sure it's not an error response
     assert not result.startswith("Error"), f"Got error: {result[:200]}"
 
     print(f"  ✓ Predictions generated successfully")

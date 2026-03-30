@@ -5,11 +5,6 @@ These tests verify that each plotting function:
 1. Creates a valid PNG file at the expected path
 2. Doesn't crash on valid input
 3. Raises helpful errors on invalid input (wrong store/item)
-
-We don't check what the charts LOOK like (that's a visual test you'd
-do manually). We check that they're generated, saved, and non-empty.
-
-Run:  python tests/test_visualizations.py
 """
 
 import sys
