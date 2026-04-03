@@ -1,12 +1,19 @@
 # Demand Forecasting Agent
 
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![XGBoost](https://img.shields.io/badge/XGBoost-2.0+-orange.svg)
+![LangGraph](https://img.shields.io/badge/LangGraph-Agent-purple.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
 An AI agent that acts as an intelligent supply chain analyst. Given a retail dataset, it autonomously explores data, engineers features, trains forecasting models, and answers natural language questions about demand — combining machine learning fundamentals with modern AI agent architecture.
 
-## The Problem
+## Overview
 
-Supply chain planning depends on accurate demand forecasts. Traditional approaches require analysts to manually load data, run models, interpret metrics, and generate reports — a time-consuming pipeline that doesn't scale. This project builds an AI agent that handles the entire workflow through natural conversation.
+### The Problem
 
-## The Solution
+Supply chain planning depends on accurate demand forecasts. Traditional approaches require analysts to manually load data, run models, interpret metrics, and generate reports — a time-consuming pipeline that doesn't scale.
+
+### The Solution
 
 Instead of a static forecasting script, this project implements a **reasoning agent** that decides what to do based on the question asked. Ask "which products are most volatile?" and it runs a volatility analysis. Ask "what if demand spikes 30%?" and it simulates the scenario with inventory impact calculations. The agent chains multiple tools together when needed — finding the hardest product to forecast, predicting its demand, and generating a chart, all from a single request.
 
@@ -79,14 +86,14 @@ User (natural language question)
 
 ## Dataset
 
-[Store Item Demand Forecasting] from Kaggle.
+[Store Item Demand Forecasting](https://www.kaggle.com/c/demand-forecasting-kernels-only/data) from Kaggle.
 
 - 10 stores × 50 items × 1,826 days = 913,000 rows
 - Daily sales data from 2013-01-01 to 2017-12-31
 - Clean data with zero missing values
 - No built-in features (price, promotions) — all 24 features are engineered
 
-## Model Performance
+## Results
 
 | Metric | Value | Meaning |
 |--------|-------|---------|
@@ -140,9 +147,11 @@ demand-forecasting-agent/
 ## How to Run
 
 ### Prerequisites
+
 - Python 3.10+
 - An Anthropic API key ([get one here](https://console.anthropic.com/))
-> **Note:** The agent is configured for Claude (Anthropic). The agent architecture is LLM-agnostic — switching to other API's requires only changing the `get_llm()` function in `main.py`and the env file.
+
+> **Note:** The agent is configured for Claude (Anthropic). The agent architecture is LLM-agnostic — switching to other APIs requires only changing the `get_llm()` function in `main.py` and the env file.
 
 ### Setup
 
@@ -163,13 +172,13 @@ cp .env.example .env
 # Download train.csv and place it in data/raw/
 ```
 
-### Run the agent
+### Run the Agent
 
 ```bash
 python main.py
 ```
 
-### Run tests (no API key needed)
+### Run Tests (no API key needed)
 
 ```bash
 python tests/test_data_loader.py
@@ -208,3 +217,7 @@ python tests/test_agent.py
    - ~700 unit shortfall over 3 months
    Recommendation: increase safety stock by 60-70%...
 ```
+
+## License
+
+MIT
