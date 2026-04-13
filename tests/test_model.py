@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
 import numpy as np
+from xgboost import XGBRegressor
 from config import CFG
 from src.feature_engineering import build_features, get_feature_names
 from src.model import (
@@ -48,19 +49,30 @@ def make_synthetic_featured_df() -> pd.DataFrame:
                 month_effect = 15 if date.month == 12 else 0
                 trend = (date - dates[0]).days * 0.01  # slight uptrend
                 noise = np.random.normal(0, 3)
-                sales = max(0, int(base + weekday_effect + month_effect + trend + noise))
-                rows.append({"date": date, "store": store, "item": item, "sales": sales})
+                sales = max(
+                    0, int(base + weekday_effect + month_effect + trend + noise)
+                )
+                rows.append(
+                    {"date": date, "store": store, "item": item, "sales": sales}
+                )
 
     df = pd.DataFrame(rows)
     return build_features(df)
 
 
-def test_train_test_split():
+def build_split(df=None):
+    """Fixture: prepare train/test split from synthetic data. Not a test."""
+    if df is None:
+        df = make_synthetic_featured_df()
+    X_train, y_train, X_test, y_test = prepare_train_test(df)
+    return X_train, y_train, X_test, y_test, df
+
+
+def test_train_test_split(df):
     """Verify the time-based split has no overlap and correct sizes."""
     print("\n── Testing prepare_train_test() ──")
 
-    df = make_synthetic_featured_df()
-    X_train, y_train, X_test, y_test = prepare_train_test(df)
+    X_train, y_train, X_test, y_test, df = build_split(df)
 
     # Sizes should be non-zero
     assert len(X_train) > 0, "Training set is empty"
@@ -73,12 +85,12 @@ def test_train_test_split():
     # No date overlap: all train dates <= TRAIN_END_DATE
     train_dates = df.loc[X_train.index, "date"]
     test_dates = df.loc[X_test.index, "date"]
-    assert train_dates.max() <= pd.Timestamp(CFG.TRAIN_END_DATE), (
-        f"Train data extends past {CFG.TRAIN_END_DATE}"
-    )
-    assert test_dates.min() >= pd.Timestamp(CFG.TEST_START_DATE), (
-        f"Test data starts before {CFG.TEST_START_DATE}"
-    )
+    assert train_dates.max() <= pd.Timestamp(
+        CFG.TRAIN_END_DATE
+    ), f"Train data extends past {CFG.TRAIN_END_DATE}"
+    assert test_dates.min() >= pd.Timestamp(
+        CFG.TEST_START_DATE
+    ), f"Test data starts before {CFG.TEST_START_DATE}"
 
     # No overlap
     assert train_dates.max() < test_dates.min(), "Train and test dates overlap!"
@@ -94,6 +106,35 @@ def test_train_test_split():
     print(f"  ✓ Target column excluded from features")
 
     return X_train, y_train, X_test, y_test, df
+
+
+def test_prepare_train_test_errors(df):
+    """Verify prepare_train_test raises helpful errors on bad date ranges."""
+    print("\n── Testing prepare_train_test() error handling ──")
+
+    # Case 1: train_end before any data → empty train set
+    try:
+        prepare_train_test(df, train_end="2000-01-01", test_start="2000-01-02")
+        assert False, "Should have raised ValueError for empty train set"
+    except ValueError as e:
+        assert "empty" in str(e).lower() or "train" in str(e).lower()
+        print(f"  ✓ Empty train set raises ValueError")
+
+    # Case 2: test_start after all data → empty test set
+    try:
+        prepare_train_test(df, train_end="2017-01-01", test_start="2099-01-01")
+        assert False, "Should have raised ValueError for empty test set"
+    except ValueError as e:
+        assert "empty" in str(e).lower() or "test" in str(e).lower()
+        print(f"  ✓ Empty test set raises ValueError")
+
+    # Case 3: train and test overlap
+    try:
+        prepare_train_test(df, train_end="2017-06-30", test_start="2017-06-15")
+        assert False, "Should have raised ValueError for overlap"
+    except ValueError as e:
+        assert "overlap" in str(e).lower()
+        print(f"  ✓ Date overlap raises ValueError")
 
 
 def test_train_model(X_train, y_train):
@@ -123,9 +164,9 @@ def test_predict(model, X_test):
     preds = predict(model, X_test)
 
     # Should return an array of same length as input
-    assert len(preds) == len(X_test), (
-        f"Prediction count {len(preds)} != test count {len(X_test)}"
-    )
+    assert len(preds) == len(
+        X_test
+    ), f"Prediction count {len(preds)} != test count {len(X_test)}"
 
     # All predictions should be >= 0 (demand can't be negative)
     assert (preds >= 0).all(), "Found negative predictions!"
@@ -146,7 +187,7 @@ def test_evaluate_model_correctness():
     """Verify metrics are computed correctly with known values."""
     print("\n── Testing evaluate_model() correctness ──")
 
-    # Known values where it's possible to compute metrics by hand:
+    # Known values that can be computed by hand:
     # actual:    [10, 20, 30]
     # predicted: [12, 18, 33]
     # errors:    [ 2,  2,  3]
@@ -181,7 +222,9 @@ def test_evaluate_model_zero_handling():
 
     # MAPE should only use non-zero rows: |2/10| + |2/20| = 0.2 + 0.1
     # MAPE = 0.3 / 2 × 100 = 15.0%
-    assert abs(metrics["mape"] - 15.0) < 0.1, f"MAPE with zeros wrong: {metrics['mape']}"
+    assert (
+        abs(metrics["mape"] - 15.0) < 0.1
+    ), f"MAPE with zeros wrong: {metrics['mape']}"
     assert "mape_note" in metrics, "Should have a note about excluded zeros"
 
     print(f"  ✓ MAPE = {metrics['mape']}% (zeros excluded correctly)")
@@ -215,9 +258,9 @@ def test_feature_importance(model, df):
         "lag" in name or "rolling" in name or "day" in name
         for name in feature_names_returned
     )
-    assert has_temporal, (
-        f"Expected temporal features in top 10, got: {feature_names_returned}"
-    )
+    assert (
+        has_temporal
+    ), f"Expected temporal features in top 10, got: {feature_names_returned}"
 
     print(f"  ✓ {len(importances)} features returned (sorted by importance)")
     print(f"  ✓ Top 3: {importances[:3]}")
@@ -231,9 +274,9 @@ def test_evaluate_by_item(df, preds):
     df_test = df[df["date"] >= CFG.TEST_START_DATE].copy()
 
     # Make sure preds aligns with df_test
-    assert len(preds) == len(df_test), (
-        f"Predictions ({len(preds)}) != test rows ({len(df_test)})"
-    )
+    assert len(preds) == len(
+        df_test
+    ), f"Predictions ({len(preds)}) != test rows ({len(df_test)})"
 
     result = evaluate_by_item(df_test, preds, top_n=2)
 
@@ -264,20 +307,24 @@ def test_predict_non_negative():
     # (very low values with high variance)
     np.random.seed(42)
     n = 200
-    X = pd.DataFrame({
-        "feature1": np.random.randn(n),
-        "feature2": np.random.randn(n),
-    })
+    X = pd.DataFrame(
+        {
+            "feature1": np.random.randn(n),
+            "feature2": np.random.randn(n),
+        }
+    )
     y = pd.Series(np.random.randint(0, 5, n))  # low values
 
     model = XGBRegressor(n_estimators=10, random_state=42, verbosity=0)
     model.fit(X, y)
 
     # Predict on values that might push predictions negative
-    X_extreme = pd.DataFrame({
-        "feature1": [-10.0, -20.0, -30.0],
-        "feature2": [-10.0, -20.0, -30.0],
-    })
+    X_extreme = pd.DataFrame(
+        {
+            "feature1": [-10.0, -20.0, -30.0],
+            "feature2": [-10.0, -20.0, -30.0],
+        }
+    )
     preds = predict(model, X_extreme)
 
     assert (preds >= 0).all(), f"Found negative predictions: {preds}"
@@ -285,7 +332,6 @@ def test_predict_non_negative():
 
 
 if __name__ == "__main__":
-    from xgboost import XGBRegressor  # import for the non-negative test
 
     print("=" * 55)
     print("  TESTS: model.py")
@@ -297,7 +343,9 @@ if __name__ == "__main__":
     print(f"  Featured data: {df.shape}")
 
     # Run tests in pipeline order
-    X_train, y_train, X_test, y_test, df = test_train_test_split()
+    test_train_test_split(df)
+    test_prepare_train_test_errors(df)
+    X_train, y_train, X_test, y_test, df = build_split(df)
     model = test_train_model(X_train, y_train)
     preds = test_predict(model, X_test)
     test_evaluate_model_correctness()

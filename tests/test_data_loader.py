@@ -41,12 +41,14 @@ def create_synthetic_data(path: Path):
                 noise = np.random.randint(-5, 6)
 
                 sales = max(0, base + weekday_effect + month_effect + noise)
-                rows.append({
-                    "date": date,
-                    "store": store,
-                    "item": item,
-                    "sales": sales,
-                })
+                rows.append(
+                    {
+                        "date": date,
+                        "store": store,
+                        "item": item,
+                        "sales": sales,
+                    }
+                )
 
     df = pd.DataFrame(rows)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -167,9 +169,9 @@ def test_missing_file():
 
 
 if __name__ == "__main__":
-    print("=" * 50)
+    print("=" * 55)
     print("  SMOKE TEST: config.py + data_loader.py")
-    print("=" * 50)
+    print("=" * 55)
 
     test_config()
 
@@ -186,6 +188,6 @@ if __name__ == "__main__":
     # Clean up
     test_data_path.unlink()
 
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 55)
     print("  ALL TESTS PASSED ✓")
-    print("=" * 50)
+    print("=" * 55)

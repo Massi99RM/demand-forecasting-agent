@@ -5,6 +5,8 @@ The loop:
   User message → agent (thinks) → calls a tool → tools (executes)
   → agent (reads result, thinks again) → calls another tool OR
   → responds to the user
+The actual reasoning loop is implemented by LangGraph's create_react_agent;
+this module is a thin wrapper that wires the LLM, tools, and system prompt together.
 """
 
 import sys
@@ -59,9 +61,10 @@ def run_agent_query(agent, query: str) -> str:
     str
         The agent's final text response.
     """
-    result = agent.invoke(
-        {"messages": [{"role": "user", "content": query}]}
-    )
+    try:
+        result = agent.invoke({"messages": [{"role": "user", "content": query}]})
+    except Exception as e:
+        return f"Agent error: {e}"
 
     # Extract the last AI message from the conversation
     messages = result["messages"]
@@ -70,10 +73,11 @@ def run_agent_query(agent, query: str) -> str:
     for msg in reversed(messages):
         # LangGraph messages can be dicts or message objects
         if hasattr(msg, "content") and hasattr(msg, "type"):
-            if msg.type == "ai" and isinstance(msg.content, str) and msg.content.strip():
+            if (
+                msg.type == "ai"
+                and isinstance(msg.content, str)
+                and msg.content.strip()
+            ):
                 return msg.content
-        elif isinstance(msg, dict):
-            if msg.get("role") == "assistant" and msg.get("content", "").strip():
-                return msg["content"]
 
     return "No response generated."

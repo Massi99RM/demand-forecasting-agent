@@ -1,10 +1,11 @@
 """
 Model — train, evaluate, predict, and explain demand forecasts.
 """
+
 import sys
 from pathlib import Path
- 
-# Ensure the project root is on Python's path 
+
+# Ensure the project root is on Python's path
 _project_root = str(Path(__file__).resolve().parent.parent)
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
@@ -20,7 +21,11 @@ from config import CFG
 from src.feature_engineering import get_feature_names
 
 
-def prepare_train_test(df: pd.DataFrame,train_end: str = None,test_start: str = None,) -> tuple:
+def prepare_train_test(
+    df: pd.DataFrame,
+    train_end: str = None,
+    test_start: str = None,
+) -> tuple:
     """
     Split featured data into train and test sets by date.
 
@@ -77,14 +82,24 @@ def prepare_train_test(df: pd.DataFrame,train_end: str = None,test_start: str = 
             f"test starts {test_min}. Adjust dates in config.py."
         )
 
-    print(f"  Train: {len(X_train):,} rows ({df.loc[train_mask, 'date'].min().date()} to {train_max.date()})")
-    print(f"  Test:  {len(X_test):,} rows ({test_min.date()} to {df.loc[test_mask, 'date'].max().date()})")
+    print(
+        f"  Train: {len(X_train):,} rows ({df.loc[train_mask, 'date'].min().date()} to {train_max.date()})"
+    )
+    print(
+        f"  Test:  {len(X_test):,} rows ({test_min.date()} to {df.loc[test_mask, 'date'].max().date()})"
+    )
     print(f"  Features: {len(feature_cols)}")
 
     return X_train, y_train, X_test, y_test
 
 
-def train_model(X_train: pd.DataFrame,y_train: pd.Series,X_val: pd.DataFrame = None,y_val: pd.Series = None,params: dict = None,) -> XGBRegressor:
+def train_model(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_val: pd.DataFrame = None,
+    y_val: pd.Series = None,
+    params: dict = None,
+) -> XGBRegressor:
     """
     Train an XGBoost regressor.
 
@@ -109,6 +124,8 @@ def train_model(X_train: pd.DataFrame,y_train: pd.Series,X_val: pd.DataFrame = N
     """
     if params is None:
         params = CFG.MODEL_PARAMS.copy()
+    else:
+        params = dict(params)  # defensive copy to avoid mutating caller's dict
 
     # Extract early_stopping_rounds
     early_stopping_rounds = params.pop("early_stopping_rounds", 50)
@@ -146,7 +163,10 @@ def train_model(X_train: pd.DataFrame,y_train: pd.Series,X_val: pd.DataFrame = N
     best_score = model.best_score
     n_estimators = params.get("n_estimators", 500)
     print(f"  Best iteration: {best_iteration} / {n_estimators}")
-    print(f"  Best validation RMSE: {best_score:.4f}")
+    if best_score is not None:
+        print(f"  Best validation RMSE: {best_score:.4f}")
+    else:
+        print(f"  Best validation RMSE: (not available)")
 
     return model
 
@@ -175,7 +195,10 @@ def predict(model: XGBRegressor, X: pd.DataFrame) -> np.ndarray:
     return preds
 
 
-def evaluate_model(y_true: np.ndarray | pd.Series,y_pred: np.ndarray,) -> dict:
+def evaluate_model(
+    y_true: np.ndarray | pd.Series,
+    y_pred: np.ndarray,
+) -> dict:
     """
     Compute evaluation metrics for demand forecasting.
 
@@ -202,7 +225,14 @@ def evaluate_model(y_true: np.ndarray | pd.Series,y_pred: np.ndarray,) -> dict:
     n_zeros = (~nonzero_mask).sum()
 
     if nonzero_mask.sum() > 0:
-        mape = np.mean(np.abs((y_true[nonzero_mask] - y_pred[nonzero_mask]) / y_true[nonzero_mask])) * 100
+        mape = (
+            np.mean(
+                np.abs(
+                    (y_true[nonzero_mask] - y_pred[nonzero_mask]) / y_true[nonzero_mask]
+                )
+            )
+            * 100
+        )
     else:
         mape = float("inf")  # all zeros — MAPE is meaningless
 
@@ -222,7 +252,11 @@ def evaluate_model(y_true: np.ndarray | pd.Series,y_pred: np.ndarray,) -> dict:
     return metrics
 
 
-def get_feature_importance(model: XGBRegressor,feature_names: list[str],top_n: int = 15,) -> list[tuple[str, float]]:
+def get_feature_importance(
+    model: XGBRegressor,
+    feature_names: list[str],
+    top_n: int = 15,
+) -> list[tuple[str, float]]:
     """
     Extract and rank feature importances from the trained model.
 
@@ -248,7 +282,7 @@ def get_feature_importance(model: XGBRegressor,feature_names: list[str],top_n: i
     # wasn't trained with feature names. Map them to the used column names.
     importance = {}
     for key, value in raw_importance.items():
-        if key.startswith("f"):
+        if key.startswith("f") and key[1:].isdigit():
             idx = int(key[1:])
             if idx < len(feature_names):
                 importance[feature_names[idx]] = value
@@ -261,14 +295,18 @@ def get_feature_importance(model: XGBRegressor,feature_names: list[str],top_n: i
         importance = {k: v / total for k, v in importance.items()}
 
     # Sort descending and take top N
-    sorted_importance = sorted(
-        importance.items(), key=lambda x: x[1], reverse=True
-    )[:top_n]
+    sorted_importance = sorted(importance.items(), key=lambda x: x[1], reverse=True)[
+        :top_n
+    ]
 
     return sorted_importance
 
 
-def evaluate_by_item(df_test: pd.DataFrame,y_pred: np.ndarray,top_n: int = 5,) -> dict:
+def evaluate_by_item(
+    df_test: pd.DataFrame,
+    y_pred: np.ndarray,
+    top_n: int = 5,
+) -> dict:
     """
     Break down model performance by individual store-item pairs.
 
@@ -315,6 +353,7 @@ def evaluate_by_item(df_test: pd.DataFrame,y_pred: np.ndarray,top_n: int = 5,) -
 if __name__ == "__main__":
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
     from src.data_loader import load_data
@@ -348,7 +387,11 @@ if __name__ == "__main__":
     item_eval = evaluate_by_item(df_test, preds, top_n=3)
     print("  Best forecasted items:")
     for item in item_eval["best_items"]:
-        print(f"    Store {item['store']}, Item {item['item']}: MAE={item['mae']}, MAPE={item['mape']}%")
+        print(
+            f"    Store {item['store']}, Item {item['item']}: MAE={item['mae']}, MAPE={item['mape']}%"
+        )
     print("  Worst forecasted items:")
     for item in item_eval["worst_items"]:
-        print(f"    Store {item['store']}, Item {item['item']}: MAE={item['mae']}, MAPE={item['mape']}%")
+        print(
+            f"    Store {item['store']}, Item {item['item']}: MAE={item['mae']}, MAPE={item['mape']}%"
+        )

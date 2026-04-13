@@ -40,7 +40,9 @@ def make_synthetic_df() -> pd.DataFrame:
                 month_effect = 15 if date.month == 12 else 0
                 noise = np.random.normal(0, 4)
                 sales = max(0, int(base + weekday_effect + month_effect + noise))
-                rows.append({"date": date, "store": store, "item": item, "sales": sales})
+                rows.append(
+                    {"date": date, "store": store, "item": item, "sales": sales}
+                )
 
     return pd.DataFrame(rows)
 
@@ -49,7 +51,9 @@ def _check_file(path_str: str, label: str):
     """Verify a file was created and is non-empty."""
     path = Path(path_str)
     assert path.exists(), f"{label}: file not created at {path}"
-    assert path.stat().st_size > 1000, f"{label}: file suspiciously small ({path.stat().st_size} bytes)"
+    assert (
+        path.stat().st_size > 1000
+    ), f"{label}: file suspiciously small ({path.stat().st_size} bytes)"
     print(f"  ✓ {label}: {path.name} ({path.stat().st_size:,} bytes)")
 
 
@@ -143,6 +147,7 @@ if __name__ == "__main__":
 
     # Clean up generated files
     import glob
+
     pngs = glob.glob(str(CFG.OUTPUT_DIR / "*.png"))
     for f in pngs:
         Path(f).unlink()

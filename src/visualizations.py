@@ -1,15 +1,17 @@
 """
 Visualizations — generate charts and plots for the agent.
 """
+
 import sys
 from pathlib import Path
- 
+
 # Ensure the project root is on Python's path
 _project_root = str(Path(__file__).resolve().parent.parent)
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
-    
+
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend — no display needed
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -17,36 +19,37 @@ import pandas as pd
 import numpy as np
 from config import CFG
 
-
 # ── Style Constants ──────────────────────────────────────────────────
 # Consistent visual identity across all charts.
 COLORS = {
-    "primary": "#2563EB",     # blue — main data
-    "secondary": "#F59E0B",   # amber — comparisons / predictions
-    "accent": "#10B981",      # green — positive / good
-    "danger": "#EF4444",      # red — negative / bad
-    "neutral": "#6B7280",     # gray — gridlines, secondary text
+    "primary": "#2563EB",  # blue — main data
+    "secondary": "#F59E0B",  # amber — comparisons / predictions
+    "accent": "#10B981",  # green — positive / good
+    "danger": "#EF4444",  # red — negative / bad
+    "neutral": "#6B7280",  # gray — gridlines, secondary text
     "background": "#FAFAFA",  # light gray background
 }
 
-FIGSIZE_WIDE = (12, 5)    # for time series, trend charts
-FIGSIZE_SQUARE = (8, 6)   # for bar charts, distributions
-DPI = 150                  # good quality without huge file sizes
+FIGSIZE_WIDE = (12, 5)  # for time series, trend charts
+FIGSIZE_SQUARE = (8, 6)  # for bar charts, distributions
+DPI = 150  # good quality without huge file sizes
 
 
 def _setup_style():
     """Apply consistent style to all charts."""
-    plt.rcParams.update({
-        "figure.facecolor": "white",
-        "axes.facecolor": "white",
-        "axes.grid": True,
-        "grid.alpha": 0.3,
-        "grid.linestyle": "--",
-        "font.size": 11,
-        "axes.titlesize": 14,
-        "axes.titleweight": "bold",
-        "axes.labelsize": 12,
-    })
+    plt.rcParams.update(
+        {
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "axes.grid": True,
+            "grid.alpha": 0.3,
+            "grid.linestyle": "--",
+            "font.size": 11,
+            "axes.titlesize": 14,
+            "axes.titleweight": "bold",
+            "axes.labelsize": 12,
+        }
+    )
 
 
 def _save_and_close(fig: plt.Figure, filename: str) -> str:
@@ -61,7 +64,11 @@ def _save_and_close(fig: plt.Figure, filename: str) -> str:
     return str(output_path)
 
 
-def plot_sales_trend(df: pd.DataFrame,store: int,item: int,) -> str:
+def plot_sales_trend(
+    df: pd.DataFrame,
+    store: int,
+    item: int,
+) -> str:
     """
     Plot daily sales over time for a specific store-item pair.
 
@@ -89,16 +96,21 @@ def plot_sales_trend(df: pd.DataFrame,store: int,item: int,) -> str:
 
     # Plot raw daily sales as a thin line
     ax.plot(
-        subset["date"], subset["sales"],
-        color=COLORS["primary"], linewidth=0.7, alpha=0.6,
+        subset["date"],
+        subset["sales"],
+        color=COLORS["primary"],
+        linewidth=0.7,
+        alpha=0.6,
         label="Daily sales",
     )
 
     # Add a 30-day rolling average to show the trend clearly.
     rolling_avg = subset["sales"].rolling(window=30, min_periods=1).mean()
     ax.plot(
-        subset["date"], rolling_avg,
-        color=COLORS["secondary"], linewidth=2.0,
+        subset["date"],
+        rolling_avg,
+        color=COLORS["secondary"],
+        linewidth=2.0,
         label="30-day moving average",
     )
 
@@ -116,7 +128,13 @@ def plot_sales_trend(df: pd.DataFrame,store: int,item: int,) -> str:
     return _save_and_close(fig, f"sales_trend_s{store}_i{item}.png")
 
 
-def plot_forecast_vs_actual(dates: pd.Series,y_true: np.ndarray,y_pred: np.ndarray,store: int = None,item: int = None,) -> str:
+def plot_forecast_vs_actual(
+    dates: pd.Series,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    store: int = None,
+    item: int = None,
+) -> str:
     """
     Overlay predicted vs actual sales.
 
@@ -145,21 +163,31 @@ def plot_forecast_vs_actual(dates: pd.Series,y_true: np.ndarray,y_pred: np.ndarr
     # ── Top panel: actual vs predicted ───────────────────────────────
     ax_main = axes[0]
     ax_main.plot(
-        dates, y_true,
-        color=COLORS["primary"], linewidth=1.2,
-        label="Actual", alpha=0.8,
+        dates,
+        y_true,
+        color=COLORS["primary"],
+        linewidth=1.2,
+        label="Actual",
+        alpha=0.8,
     )
     ax_main.plot(
-        dates, y_pred,
-        color=COLORS["secondary"], linewidth=1.2,
-        label="Predicted", linestyle="--", alpha=0.8,
+        dates,
+        y_pred,
+        color=COLORS["secondary"],
+        linewidth=1.2,
+        label="Predicted",
+        linestyle="--",
+        alpha=0.8,
     )
 
     # Shade the error region between actual and predicted.
     # This makes forecast errors immediately visible as colored area.
     ax_main.fill_between(
-        dates, y_true, y_pred,
-        alpha=0.15, color=COLORS["danger"],
+        dates,
+        y_true,
+        y_pred,
+        alpha=0.15,
+        color=COLORS["danger"],
         label="Forecast error",
     )
 
@@ -177,9 +205,11 @@ def plot_forecast_vs_actual(dates: pd.Series,y_true: np.ndarray,y_pred: np.ndarr
     ax_err = axes[1]
     errors = np.asarray(y_true) - np.asarray(y_pred)
     ax_err.bar(
-        dates, errors,
+        dates,
+        errors,
         color=[COLORS["accent"] if e >= 0 else COLORS["danger"] for e in errors],
-        alpha=0.6, width=1.0,
+        alpha=0.6,
+        width=1.0,
     )
     ax_err.axhline(y=0, color=COLORS["neutral"], linewidth=0.8)
     ax_err.set_ylabel("Error")
@@ -191,7 +221,10 @@ def plot_forecast_vs_actual(dates: pd.Series,y_true: np.ndarray,y_pred: np.ndarr
     return _save_and_close(fig, f"forecast_vs_actual{suffix}.png")
 
 
-def plot_feature_importance(importances: list[tuple[str, float]],top_n: int = 15,) -> str:
+def plot_feature_importance(
+    importances: list[tuple[str, float]],
+    top_n: int = 15,
+) -> str:
     """
     Horizontal bar chart of feature importances.
 
@@ -217,17 +250,23 @@ def plot_feature_importance(importances: list[tuple[str, float]],top_n: int = 15
     fig, ax = plt.subplots(figsize=FIGSIZE_SQUARE)
 
     bars = ax.barh(
-        names, scores,
-        color=COLORS["primary"], alpha=0.8,
-        edgecolor="white", linewidth=0.5,
+        names,
+        scores,
+        color=COLORS["primary"],
+        alpha=0.8,
+        edgecolor="white",
+        linewidth=0.5,
     )
 
     # Add value labels on each bar
     for bar, score in zip(bars, scores):
         ax.text(
-            bar.get_width() + 0.005, bar.get_y() + bar.get_height() / 2,
+            bar.get_width() + 0.005,
+            bar.get_y() + bar.get_height() / 2,
             f"{score:.1%}",
-            va="center", fontsize=10, color=COLORS["neutral"],
+            va="center",
+            fontsize=10,
+            color=COLORS["neutral"],
         )
 
     ax.set_title("Feature importance (gain)")
@@ -237,7 +276,11 @@ def plot_feature_importance(importances: list[tuple[str, float]],top_n: int = 15
     return _save_and_close(fig, "feature_importance.png")
 
 
-def plot_demand_distribution(df: pd.DataFrame,store: int,item: int,) -> str:
+def plot_demand_distribution(
+    df: pd.DataFrame,
+    store: int,
+    item: int,
+) -> str:
     """
     Histogram plus box plot showing demand variability for a product.
 
@@ -261,14 +304,20 @@ def plot_demand_distribution(df: pd.DataFrame,store: int,item: int,) -> str:
     sales = subset["sales"]
 
     fig, (ax_box, ax_hist) = plt.subplots(
-        2, 1, figsize=(10, 6), height_ratios=[1, 3],
-        sharex=True, gridspec_kw={"hspace": 0.05},
+        2,
+        1,
+        figsize=(10, 6),
+        height_ratios=[1, 3],
+        sharex=True,
+        gridspec_kw={"hspace": 0.05},
         layout="constrained",
     )
 
     # Box plot (top)
     bp = ax_box.boxplot(
-        sales, vert=False, widths=0.6,
+        sales,
+        vert=False,
+        widths=0.6,
         patch_artist=True,
         boxprops=dict(facecolor=COLORS["primary"], alpha=0.3),
         medianprops=dict(color=COLORS["danger"], linewidth=2),
@@ -279,15 +328,31 @@ def plot_demand_distribution(df: pd.DataFrame,store: int,item: int,) -> str:
 
     # Histogram (bottom)
     ax_hist.hist(
-        sales, bins=40, color=COLORS["primary"],
-        alpha=0.7, edgecolor="white", linewidth=0.5,
+        sales,
+        bins=40,
+        color=COLORS["primary"],
+        alpha=0.7,
+        edgecolor="white",
+        linewidth=0.5,
     )
 
     # Add mean and median lines
     mean_val = sales.mean()
     median_val = sales.median()
-    ax_hist.axvline(mean_val, color=COLORS["secondary"], linewidth=2, linestyle="--", label=f"Mean: {mean_val:.1f}")
-    ax_hist.axvline(median_val, color=COLORS["danger"], linewidth=2, linestyle="-", label=f"Median: {median_val:.1f}")
+    ax_hist.axvline(
+        mean_val,
+        color=COLORS["secondary"],
+        linewidth=2,
+        linestyle="--",
+        label=f"Mean: {mean_val:.1f}",
+    )
+    ax_hist.axvline(
+        median_val,
+        color=COLORS["danger"],
+        linewidth=2,
+        linestyle="-",
+        label=f"Median: {median_val:.1f}",
+    )
 
     ax_hist.set_xlabel("Daily sales (units)")
     ax_hist.set_ylabel("Frequency (days)")
@@ -300,17 +365,25 @@ def plot_demand_distribution(df: pd.DataFrame,store: int,item: int,) -> str:
         f"Min: {sales.min()} / Max: {sales.max()}"
     )
     ax_hist.text(
-        0.98, 0.95, stats_text,
+        0.98,
+        0.95,
+        stats_text,
         transform=ax_hist.transAxes,
-        verticalalignment="top", horizontalalignment="right",
-        fontsize=10, color=COLORS["neutral"],
+        verticalalignment="top",
+        horizontalalignment="right",
+        fontsize=10,
+        color=COLORS["neutral"],
         bbox=dict(boxstyle="round,pad=0.4", facecolor="white", alpha=0.8),
     )
 
     return _save_and_close(fig, f"demand_dist_s{store}_i{item}.png")
 
 
-def plot_weekly_pattern(df: pd.DataFrame,store: int,item: int,) -> str:
+def plot_weekly_pattern(
+    df: pd.DataFrame,
+    store: int,
+    item: int,
+) -> str:
     """
     Bar chart showing average sales by day of week.
 
@@ -340,25 +413,36 @@ def plot_weekly_pattern(df: pd.DataFrame,store: int,item: int,) -> str:
     fig, ax = plt.subplots(figsize=(8, 5))
 
     bars = ax.bar(
-        day_names, day_stats["mean"],
+        day_names,
+        day_stats["mean"],
         color=[COLORS["primary"]] * 5 + [COLORS["secondary"]] * 2,
-        alpha=0.8, edgecolor="white", linewidth=0.5,
+        alpha=0.8,
+        edgecolor="white",
+        linewidth=0.5,
     )
 
     # Error bars show the std — how much daily demand varies within
     # each weekday. Large error bars mean "Saturday averages 50, but
     # it could easily be 30 or 70."
     ax.errorbar(
-        day_names, day_stats["mean"], yerr=day_stats["std"],
-        fmt="none", color=COLORS["neutral"], capsize=4, linewidth=1.2,
+        day_names,
+        day_stats["mean"],
+        yerr=day_stats["std"],
+        fmt="none",
+        color=COLORS["neutral"],
+        capsize=4,
+        linewidth=1.2,
     )
 
     # Add value labels on bars
     for bar, mean_val in zip(bars, day_stats["mean"]):
         ax.text(
-            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.5,
             f"{mean_val:.1f}",
-            ha="center", va="bottom", fontsize=10,
+            ha="center",
+            va="bottom",
+            fontsize=10,
         )
 
     ax.set_title(f"Average sales by day of week — Store {store}, Item {item}")
@@ -369,7 +453,10 @@ def plot_weekly_pattern(df: pd.DataFrame,store: int,item: int,) -> str:
     return _save_and_close(fig, f"weekly_pattern_s{store}_i{item}.png")
 
 
-def plot_store_comparison(df: pd.DataFrame,item: int,) -> str:
+def plot_store_comparison(
+    df: pd.DataFrame,
+    item: int,
+) -> str:
     """
     Compare average demand for the same item across all stores.
 
@@ -396,22 +483,30 @@ def plot_store_comparison(df: pd.DataFrame,item: int,) -> str:
     bars = ax.bar(
         store_stats["store"].astype(str),
         store_stats["mean"],
-        color=COLORS["primary"], alpha=0.8,
-        edgecolor="white", linewidth=0.5,
+        color=COLORS["primary"],
+        alpha=0.8,
+        edgecolor="white",
+        linewidth=0.5,
     )
 
     ax.errorbar(
         store_stats["store"].astype(str),
         store_stats["mean"],
         yerr=store_stats["std"],
-        fmt="none", color=COLORS["neutral"], capsize=4, linewidth=1.2,
+        fmt="none",
+        color=COLORS["neutral"],
+        capsize=4,
+        linewidth=1.2,
     )
 
     for bar, mean_val in zip(bars, store_stats["mean"]):
         ax.text(
-            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.5,
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.5,
             f"{mean_val:.1f}",
-            ha="center", va="bottom", fontsize=10,
+            ha="center",
+            va="bottom",
+            fontsize=10,
         )
 
     ax.set_title(f"Average daily sales by store — Item {item}")
@@ -423,7 +518,10 @@ def plot_store_comparison(df: pd.DataFrame,item: int,) -> str:
     return _save_and_close(fig, f"store_comparison_i{item}.png")
 
 
-def plot_volatility_ranking(df: pd.DataFrame,top_n: int = 15,) -> str:
+def plot_volatility_ranking(
+    df: pd.DataFrame,
+    top_n: int = 15,
+) -> str:
     """
     Rank items by demand volatility (coefficient of variation).
 
@@ -442,33 +540,44 @@ def plot_volatility_ranking(df: pd.DataFrame,top_n: int = 15,) -> str:
 
     # Compute CV per store-item pair
     item_stats = (
-        df.groupby(["store", "item"])["sales"]
-        .agg(["mean", "std"])
-        .reset_index()
+        df.groupby(["store", "item"])["sales"].agg(["mean", "std"]).reset_index()
     )
     item_stats["cv"] = item_stats["std"] / item_stats["mean"]
-    item_stats["label"] = "S" + item_stats["store"].astype(str) + "-I" + item_stats["item"].astype(str)
+    item_stats["label"] = (
+        "S" + item_stats["store"].astype(str) + "-I" + item_stats["item"].astype(str)
+    )
 
     # Sort by CV descending and take top N
     top_volatile = item_stats.nlargest(top_n, "cv")
 
     fig, ax = plt.subplots(figsize=FIGSIZE_SQUARE)
 
-    colors = [COLORS["danger"] if cv > 0.3 else COLORS["secondary"] if cv > 0.2 else COLORS["accent"]
-              for cv in top_volatile["cv"]]
+    colors = [
+        (
+            COLORS["danger"]
+            if cv > 0.3
+            else COLORS["secondary"] if cv > 0.2 else COLORS["accent"]
+        )
+        for cv in top_volatile["cv"]
+    ]
 
     bars = ax.barh(
         top_volatile["label"][::-1],
         top_volatile["cv"][::-1],
-        color=colors[::-1], alpha=0.8,
-        edgecolor="white", linewidth=0.5,
+        color=colors[::-1],
+        alpha=0.8,
+        edgecolor="white",
+        linewidth=0.5,
     )
 
     for bar, cv in zip(bars, top_volatile["cv"][::-1]):
         ax.text(
-            bar.get_width() + 0.005, bar.get_y() + bar.get_height() / 2,
+            bar.get_width() + 0.005,
+            bar.get_y() + bar.get_height() / 2,
             f"{cv:.3f}",
-            va="center", fontsize=10, color=COLORS["neutral"],
+            va="center",
+            fontsize=10,
+            color=COLORS["neutral"],
         )
 
     ax.set_title(f"Top {top_n} most volatile products (by CV)")
@@ -476,6 +585,7 @@ def plot_volatility_ranking(df: pd.DataFrame,top_n: int = 15,) -> str:
 
     # Add a legend for the color coding
     from matplotlib.patches import Patch
+
     legend_elements = [
         Patch(facecolor=COLORS["danger"], alpha=0.8, label="High (CV > 0.3)"),
         Patch(facecolor=COLORS["secondary"], alpha=0.8, label="Medium (0.2-0.3)"),
@@ -490,13 +600,16 @@ def plot_volatility_ranking(df: pd.DataFrame,top_n: int = 15,) -> str:
 # ── Quick self-test ──────────────────────────────────────────────────
 if __name__ == "__main__":
     import sys
+
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
     from src.data_loader import load_data
     from src.feature_engineering import build_features
     from src.model import (
-        prepare_train_test, train_model, 
-        predict, get_feature_importance,
+        prepare_train_test,
+        train_model,
+        predict,
+        get_feature_importance,
     )
     from src.feature_engineering import get_feature_names
 

@@ -1,9 +1,10 @@
 """
 Data Loader — load, validate, and summarize the raw dataset.
 """
+
 import sys
 from pathlib import Path
- 
+
 # Ensure the project root is on Python's path
 _project_root = str(Path(__file__).resolve().parent.parent)
 if _project_root not in sys.path:
@@ -90,6 +91,7 @@ def load_data(path: Path = None) -> pd.DataFrame:
 def get_data_summary(df: pd.DataFrame) -> dict:
     """
     Generate a comprehensive summary of the dataset.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -243,7 +245,9 @@ def _infer_frequency(df: pd.DataFrame) -> str:
         return "daily"
     elif most_common_gap == pd.Timedelta(weeks=1):
         return "weekly"
-    elif most_common_gap >= pd.Timedelta(days=28) and most_common_gap <= pd.Timedelta(days=31):
+    elif most_common_gap >= pd.Timedelta(days=28) and most_common_gap <= pd.Timedelta(
+        days=31
+    ):
         return "monthly"
     else:
         return f"~{most_common_gap.days} days"
@@ -272,4 +276,7 @@ if __name__ == "__main__":
         print("\n✓ All checks passed!")
 
     except FileNotFoundError as e:
+        print(f"\n✗ {e}")
+
+    except ValueError as e:
         print(f"\n✗ {e}")

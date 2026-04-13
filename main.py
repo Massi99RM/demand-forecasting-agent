@@ -11,12 +11,9 @@ The agent will:
 
 REQUIREMENTS:
   - Kaggle dataset at data/raw/train.csv
-  - ANTHROPIC_API_KEY environment variable set
+  - ANTHROPIC_API_KEY environment variable set, must be set in a .env file
   - Dependencies installed: pip install -r requirements.txt
-
-An API key must be set in a .env file:
-    ANTHROPIC_API_KEY=sk-ant-...
-"""
+  """
 
 import sys
 from pathlib import Path
@@ -39,7 +36,7 @@ def get_llm():
     """
     Initialize the Claude LLM.
 
-    You can change this to any model — the agent code is model-agnostic.
+    To change the model, swap this function's contents and update the import at the top of this file.
     """
     api_key = os.getenv("ANTHROPIC_API_KEY")
 
@@ -56,7 +53,7 @@ def get_llm():
 
     return ChatAnthropic(
         model="claude-sonnet-4-20250514",
-        temperature=0,       # deterministic for reproducible demos
+        temperature=0,  # deterministic for reproducible demos
         max_tokens=4096,
     )
 

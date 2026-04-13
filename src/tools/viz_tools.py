@@ -15,11 +15,14 @@ from langchain_core.tools import tool
 from src.agent import state
 from src.data_loader import load_data
 from src.feature_engineering import build_features, get_feature_names
-from src.model import predict
+from src.model import predict, get_feature_importance
 from src.visualizations import (
     plot_sales_trend,
     plot_forecast_vs_actual,
+    plot_feature_importance,
+    plot_demand_distribution,
     plot_weekly_pattern,
+    plot_store_comparison,
     plot_volatility_ranking,
 )
 from config import CFG
@@ -57,8 +60,8 @@ def plot_sales_history(store: int, item: int) -> str:
             f"moving average (orange line) revealing the underlying trend "
             f"and seasonal patterns."
         )
-    except ValueError as e:
-        return f"Error: {str(e)}"
+    except Exception as e:
+        return f"Error generating chart: {str(e)}"
 
 
 @tool
@@ -84,9 +87,7 @@ def plot_forecast_chart(store: int, item: int) -> str:
     _ensure_data_loaded()
 
     # Filter test data to this specific store-item pair
-    df_test = state.featured_df[
-        state.featured_df["date"] >= CFG.TEST_START_DATE
-    ]
+    df_test = state.featured_df[state.featured_df["date"] >= CFG.TEST_START_DATE]
     mask = (df_test["store"] == store) & (df_test["item"] == item)
     df_item = df_test[mask]
 
@@ -100,9 +101,7 @@ def plot_forecast_chart(store: int, item: int) -> str:
     dates = df_item["date"]
 
     try:
-        path = plot_forecast_vs_actual(
-            dates, y_true, y_pred, store=store, item=item
-        )
+        path = plot_forecast_vs_actual(dates, y_true, y_pred, store=store, item=item)
         mae = np.mean(np.abs(y_true - y_pred))
         return (
             f"Forecast vs actual chart generated for Store {store}, Item {item}.\n"
@@ -138,8 +137,8 @@ def plot_weekly_pattern_chart(store: int, item: int) -> str:
             f"Blue bars = weekdays, orange bars = weekends. "
             f"Error bars show standard deviation (daily variability)."
         )
-    except ValueError as e:
-        return f"Error: {str(e)}"
+    except Exception as e:
+        return f"Error generating chart: {str(e)}"
 
 
 @tool
@@ -163,6 +162,89 @@ def plot_volatility_chart(top_n: int = 15) -> str:
             f"Products ranked by CV (std/mean). "
             f"Red = high volatility (CV > 0.3), "
             f"amber = moderate (0.2-0.3), green = stable (< 0.2)."
+        )
+    except Exception as e:
+        return f"Error generating chart: {str(e)}"
+
+
+@tool
+def plot_feature_importance_chart(top_n: int = 15) -> str:
+    """Generate a horizontal bar chart of the top model features by importance.
+
+    Shows which features the trained XGBoost model relies on most heavily
+    to make predictions. Useful for explaining model behavior.
+
+    The model must be trained first.
+
+    Args:
+        top_n: Number of top features to display. Default 15.
+    """
+    if not state.is_model_trained:
+        return (
+            "Error: No trained model available. "
+            "Please call train_forecast_model first."
+        )
+
+    try:
+        importances = get_feature_importance(
+            state.model, state.feature_names, top_n=top_n
+        )
+        path = plot_feature_importance(importances, top_n=top_n)
+        return (
+            f"Feature importance chart generated (top {top_n} features).\n"
+            f"Saved to: {path}\n\n"
+            f"Features are ranked by gain — the average loss reduction "
+            f"when the feature is used in a tree split. Higher = more "
+            f"influential on predictions."
+        )
+    except Exception as e:
+        return f"Error generating chart: {str(e)}"
+
+
+@tool
+def plot_demand_distribution_chart(store: int, item: int) -> str:
+    """Generate a box plot and histogram showing demand distribution for a product.
+
+    Visualizes how sales are spread out — reveals skewness, outliers,
+    and typical vs extreme demand days.
+
+    Args:
+        store: Store ID (integer, typically 1-10).
+        item: Item ID (integer, typically 1-50).
+    """
+    _ensure_data_loaded()
+
+    try:
+        path = plot_demand_distribution(state.raw_df, store=store, item=item)
+        return (
+            f"Demand distribution chart generated for Store {store}, Item {item}.\n"
+            f"Saved to: {path}\n\n"
+            f"Top panel: box plot showing median, quartiles, and outliers. "
+            f"Bottom panel: histogram with mean (dashed) and median (solid) lines."
+        )
+    except Exception as e:
+        return f"Error generating chart: {str(e)}"
+
+
+@tool
+def plot_store_comparison_chart(item: int) -> str:
+    """Generate a bar chart comparing average demand for an item across all stores.
+
+    Shows which stores sell the most of a given item, with error bars
+    indicating daily variability. Useful for inventory allocation decisions.
+
+    Args:
+        item: Item ID (integer, typically 1-50).
+    """
+    _ensure_data_loaded()
+
+    try:
+        path = plot_store_comparison(state.raw_df, item=item)
+        return (
+            f"Store comparison chart generated for Item {item}.\n"
+            f"Saved to: {path}\n\n"
+            f"Bars show average daily sales per store. Error bars show "
+            f"standard deviation (daily variability within each store)."
         )
     except Exception as e:
         return f"Error generating chart: {str(e)}"

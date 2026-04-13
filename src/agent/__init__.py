@@ -29,24 +29,24 @@ class AgentState:
     training_metrics : dict
         Evaluation metrics from the most recent training run.
     """
+
     raw_df: pd.DataFrame | None = None
     featured_df: pd.DataFrame | None = None
     model: XGBRegressor | None = None
-    feature_names: list = field(default_factory=list)
+    feature_names: list[str] = field(default_factory=list)
     is_data_loaded: bool = False
     is_model_trained: bool = False
     training_metrics: dict = field(default_factory=dict)
 
     def reset(self):
         """Clear all state — useful for testing or restarting."""
-        self.raw_df = None
-        self.featured_df = None
-        self.model = None
-        self.feature_names = []
-        self.is_data_loaded = False
-        self.is_model_trained = False
-        self.training_metrics = {}
+
+        default = AgentState()
+        for fname in self.__dataclass_fields__:
+            setattr(self, fname, getattr(default, fname))
 
 
 # Global instance — all tools import and use this same object.
+# This is safe for the single-user CLI. For a multi-user service,
+# state would need to be per-session (e.g., keyed by conversation ID).
 state = AgentState()

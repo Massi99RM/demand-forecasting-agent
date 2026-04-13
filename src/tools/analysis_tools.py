@@ -50,10 +50,14 @@ def find_volatile_products(top_n: int = 10) -> str:
     )
     item_stats["cv"] = item_stats["std"] / item_stats["mean"]
     top_volatile = item_stats.nlargest(top_n, "cv")
-    bottom_stable = item_stats.nsmallest(5, "cv")
+    bottom_stable = item_stats.nsmallest(
+        5, "cv"
+    )  # Always show 5 stable items for reference
 
     result = f"Top {top_n} most volatile products (by CV):\n\n"
-    result += f"{'Rank':<6} {'Store':<8} {'Item':<8} {'CV':<8} {'Mean':<10} {'Std':<10}\n"
+    result += (
+        f"{'Rank':<6} {'Store':<8} {'Item':<8} {'CV':<8} {'Mean':<10} {'Std':<10}\n"
+    )
     result += "-" * 52 + "\n"
 
     for rank, (_, row) in enumerate(top_volatile.iterrows(), 1):
@@ -62,9 +66,7 @@ def find_volatile_products(top_n: int = 10) -> str:
             f"{row['cv']:<8.3f} {row['mean']:<10.1f} {row['std']:<10.1f}\n"
         )
 
-    result += (
-        f"\nFor reference, the 5 most STABLE products:\n"
-    )
+    result += f"\nFor reference, the 5 most STABLE products:\n"
     for _, row in bottom_stable.iterrows():
         result += (
             f"  Store {int(row['store'])}, Item {int(row['item'])}: "
@@ -88,6 +90,8 @@ def simulate_demand_spike(store: int, item: int, spike_pct: float) -> str:
     Takes a store-item pair and a percentage spike (e.g., 20 for a 20%
     increase), applies it to the actual test data, and shows how the
     current model's predictions would compare against the spiked demand.
+    Predictions are not re-generated — this compares the existing forecast to the hypothetical spiked demand,
+    which represents the scenario where the spike is unforeseen by the model.
 
     Use this for what-if scenarios: "what if demand increases by 30%?"
     or "how bad would our forecast be during a 50% surge?"
@@ -108,9 +112,7 @@ def simulate_demand_spike(store: int, item: int, spike_pct: float) -> str:
     _ensure_data_loaded()
 
     # Get test data for this item
-    df_test = state.featured_df[
-        state.featured_df["date"] >= CFG.TEST_START_DATE
-    ]
+    df_test = state.featured_df[state.featured_df["date"] >= CFG.TEST_START_DATE]
     mask = (df_test["store"] == store) & (df_test["item"] == item)
     df_item = df_test[mask]
 
@@ -159,7 +161,9 @@ def simulate_demand_spike(store: int, item: int, spike_pct: float) -> str:
     if spike_pct <= 10:
         result += "Minor spike. Current safety stock may absorb this."
     elif spike_pct <= 30:
-        result += "Moderate spike. Consider increasing safety stock by the spike percentage."
+        result += (
+            "Moderate spike. Consider increasing safety stock by the spike percentage."
+        )
     else:
         result += "Major spike. Requires supply chain intervention — expedited orders, alternative suppliers, or demand management."
 

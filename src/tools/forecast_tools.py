@@ -78,9 +78,7 @@ def train_forecast_model() -> str:
     metrics = evaluate_model(y_test, preds)
 
     # Per-item breakdown (top 3 best and worst)
-    df_test = state.featured_df[
-        state.featured_df["date"] >= CFG.TEST_START_DATE
-    ]
+    df_test = state.featured_df[state.featured_df["date"] >= CFG.TEST_START_DATE]
     item_eval = evaluate_by_item(df_test, preds, top_n=3)
 
     # Cache everything in state
@@ -149,9 +147,7 @@ def predict_demand(store: int, item: int) -> str:
     _ensure_data_loaded()
 
     # Filter test data for this store-item pair
-    df_test = state.featured_df[
-        state.featured_df["date"] >= CFG.TEST_START_DATE
-    ]
+    df_test = state.featured_df[state.featured_df["date"] >= CFG.TEST_START_DATE]
     mask = (df_test["store"] == store) & (df_test["item"] == item)
     df_item = df_test[mask]
 
@@ -167,7 +163,7 @@ def predict_demand(store: int, item: int) -> str:
     # Compute metrics for this specific item
     metrics = evaluate_model(y_true, y_pred)
 
-    # Format results — show first 14 days and last 7 days of predictions
+    # Format results — show first 14 days of predictions
     result = (
         f"Demand forecast for Store {store}, Item {item}\n\n"
         f"Period: {str(dates[0])[:10]} to {str(dates[-1])[:10]} "
@@ -186,8 +182,7 @@ def predict_demand(store: int, item: int) -> str:
         date_str = str(dates[i])[:10]
         error = y_true[i] - y_pred[i]
         result += (
-            f"{date_str:<12} {y_true[i]:>8.0f} {y_pred[i]:>10.1f} "
-            f"{error:>+8.1f}\n"
+            f"{date_str:<12} {y_true[i]:>8.0f} {y_pred[i]:>10.1f} " f"{error:>+8.1f}\n"
         )
 
     if len(dates) > 14:
@@ -225,9 +220,7 @@ def get_model_explanation() -> str:
             "Please call train_forecast_model first."
         )
 
-    importances = get_feature_importance(
-        state.model, state.feature_names, top_n=15
-    )
+    importances = get_feature_importance(state.model, state.feature_names, top_n=15)
 
     result = (
         f"Feature importance (ranked by gain)\n\n"

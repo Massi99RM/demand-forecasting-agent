@@ -34,12 +34,14 @@ def make_simple_df() -> pd.DataFrame:
       - rolling_mean_3 shifted by 1 for day 5 should be mean(20,30,40) = 30
     """
     dates = pd.date_range("2017-01-02", periods=10, freq="D")  # Mon Jan 2
-    return pd.DataFrame({
-        "date": dates,
-        "store": 1,
-        "item": 1,
-        "sales": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-    })
+    return pd.DataFrame(
+        {
+            "date": dates,
+            "store": 1,
+            "item": 1,
+            "sales": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+        }
+    )
 
 
 def make_multigroup_df() -> pd.DataFrame:
@@ -49,22 +51,28 @@ def make_multigroup_df() -> pd.DataFrame:
     """
     dates = pd.date_range("2017-01-02", periods=5, freq="D")
 
-    group1 = pd.DataFrame({
-        "date": dates,
-        "store": 1,
-        "item": 1,
-        "sales": [100, 200, 300, 400, 500],
-    })
-    group2 = pd.DataFrame({
-        "date": dates,
-        "store": 1,
-        "item": 2,
-        "sales": [10, 20, 30, 40, 50],
-    })
+    group1 = pd.DataFrame(
+        {
+            "date": dates,
+            "store": 1,
+            "item": 1,
+            "sales": [100, 200, 300, 400, 500],
+        }
+    )
+    group2 = pd.DataFrame(
+        {
+            "date": dates,
+            "store": 1,
+            "item": 2,
+            "sales": [10, 20, 30, 40, 50],
+        }
+    )
 
-    return pd.concat([group1, group2]).sort_values(
-        ["store", "item", "date"]
-    ).reset_index(drop=True)
+    return (
+        pd.concat([group1, group2])
+        .sort_values(["store", "item", "date"])
+        .reset_index(drop=True)
+    )
 
 
 def test_time_features():
@@ -92,13 +100,20 @@ def test_time_features():
     assert "day_of_week" not in df.columns, "Original df was modified!"
 
     expected_new_cols = {
-        "day_of_week", "day_of_month", "month", "week_of_year",
-        "quarter", "year", "is_weekend", "is_month_start", "is_month_end",
+        "day_of_week",
+        "day_of_month",
+        "month",
+        "week_of_year",
+        "quarter",
+        "year",
+        "is_weekend",
+        "is_month_start",
+        "is_month_end",
     }
     actual_new_cols = set(result.columns) - set(df.columns)
-    assert expected_new_cols == actual_new_cols, (
-        f"Missing columns: {expected_new_cols - actual_new_cols}"
-    )
+    assert (
+        expected_new_cols == actual_new_cols
+    ), f"Missing columns: {expected_new_cols - actual_new_cols}"
 
     print("  ✓ Day of week correct (Monday=0, Saturday=5)")
     print("  ✓ Weekend detection correct")
@@ -156,9 +171,9 @@ def test_lag_features_multigroup():
 
     # Item 2, second row (index 6, sales=20): lag_1 should be 10
     item2_second = result.iloc[6]
-    assert item2_second["sales_lag_1"] == 10, (
-        f"Item 2's second lag_1 should be 10, got {item2_second['sales_lag_1']}"
-    )
+    assert (
+        item2_second["sales_lag_1"] == 10
+    ), f"Item 2's second lag_1 should be 10, got {item2_second['sales_lag_1']}"
 
     print("  ✓ No cross-group contamination in lag features")
     print("  ✓ Each store-item pair has independent lag computation")
@@ -181,10 +196,18 @@ def test_rolling_features():
     col = "sales_rolling_mean_3"
 
     assert pd.isna(result.iloc[0][col]), "Row 0 should be NaN (shifted)"
-    assert result.iloc[1][col] == 10.0, f"Row 1: expected 10.0, got {result.iloc[1][col]}"
-    assert result.iloc[2][col] == 15.0, f"Row 2: expected 15.0, got {result.iloc[2][col]}"
-    assert result.iloc[3][col] == 20.0, f"Row 3: expected 20.0, got {result.iloc[3][col]}"
-    assert result.iloc[4][col] == 30.0, f"Row 4: expected 30.0, got {result.iloc[4][col]}"
+    assert (
+        result.iloc[1][col] == 10.0
+    ), f"Row 1: expected 10.0, got {result.iloc[1][col]}"
+    assert (
+        result.iloc[2][col] == 15.0
+    ), f"Row 2: expected 15.0, got {result.iloc[2][col]}"
+    assert (
+        result.iloc[3][col] == 20.0
+    ), f"Row 3: expected 20.0, got {result.iloc[3][col]}"
+    assert (
+        result.iloc[4][col] == 30.0
+    ), f"Row 4: expected 30.0, got {result.iloc[4][col]}"
 
     print("  ✓ Rolling mean values correct")
     print("  ✓ shift(1) applied — no current-row leakage")
@@ -254,12 +277,14 @@ def test_holiday_features():
     # Create a DataFrame that spans a known USA holiday
     # For example, July 4, 2017 is Independence Day
     dates = pd.date_range("2017-07-01", "2017-07-07", freq="D")
-    df = pd.DataFrame({
-        "date": dates,
-        "store": 1,
-        "item": 1,
-        "sales": range(10, 80, 10),
-    })
+    df = pd.DataFrame(
+        {
+            "date": dates,
+            "store": 1,
+            "item": 1,
+            "sales": range(10, 80, 10),
+        }
+    )
 
     result = add_holiday_features(df)
 
@@ -272,14 +297,14 @@ def test_holiday_features():
     assert july3_row["is_holiday"] == 0, "July 3 should NOT be a holiday"
 
     # July 3: days_to_holiday should be 1 (tomorrow is July 4)
-    assert july3_row["days_to_holiday"] == 1, (
-        f"July 3 should be 1 day to holiday, got {july3_row['days_to_holiday']}"
-    )
+    assert (
+        july3_row["days_to_holiday"] == 1
+    ), f"July 3 should be 1 day to holiday, got {july3_row['days_to_holiday']}"
 
     # July 4: days_to_holiday should be 0
-    assert july4_row["days_to_holiday"] == 0, (
-        f"July 4 should be 0 days to holiday, got {july4_row['days_to_holiday']}"
-    )
+    assert (
+        july4_row["days_to_holiday"] == 0
+    ), f"July 4 should be 0 days to holiday, got {july4_row['days_to_holiday']}"
 
     print("  ✓ Holiday detection correct (July 4 = holiday)")
     print("  ✓ days_to_holiday correct")
@@ -294,12 +319,14 @@ def test_build_features():
     dates = pd.date_range("2017-01-01", periods=60, freq="D")
     np.random.seed(42)
 
-    df = pd.DataFrame({
-        "date": dates,
-        "store": 1,
-        "item": 1,
-        "sales": np.random.randint(10, 100, size=60),
-    })
+    df = pd.DataFrame(
+        {
+            "date": dates,
+            "store": 1,
+            "item": 1,
+            "sales": np.random.randint(10, 100, size=60),
+        }
+    )
 
     result = build_features(df)
 

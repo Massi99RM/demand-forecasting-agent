@@ -3,7 +3,7 @@ Tests for the agent layer.
 
 These tests verify:
 1. The system prompt is non-empty and contains key instructions
-2. All 12 tools are registered and importable
+2. All 15 tools are registered and importable
 3. The agent graph builds correctly (without calling the API)
 4. main.py imports cleanly
 """
@@ -21,15 +21,15 @@ def test_system_prompt():
     """Verify the system prompt contains critical instructions."""
     print("\n── Testing system prompt ──")
 
-    assert len(SYSTEM_PROMPT) > 500, (
-        f"System prompt too short ({len(SYSTEM_PROMPT)} chars)."
-    )
+    assert (
+        len(SYSTEM_PROMPT) > 500
+    ), f"System prompt too short ({len(SYSTEM_PROMPT)} chars)."
 
     prompt_lower = SYSTEM_PROMPT.lower()
 
-    assert "never" in prompt_lower and "invent" in prompt_lower, (
-        "Prompt must tell the agent to never invent numbers"
-    )
+    assert (
+        "never" in prompt_lower and "invent" in prompt_lower
+    ), "Prompt must tell the agent to never invent numbers"
     assert "mae" in prompt_lower, "Prompt should explain MAE"
     assert "rmse" in prompt_lower, "Prompt should explain RMSE"
     assert "mape" in prompt_lower, "Prompt should explain MAPE"
@@ -40,19 +40,29 @@ def test_system_prompt():
 
 
 def test_all_tools_registered():
-    """Verify all 12 tools are importable and have proper metadata."""
+    """Verify all 15 tools are importable and have proper metadata."""
     print("\n── Testing tool registration ──")
 
-    assert len(all_tools) == 12, (
-        f"Expected 12 tools, got {len(all_tools)}: {[t.name for t in all_tools]}"
-    )
+    assert (
+        len(all_tools) == 15
+    ), f"Expected 15 tools, got {len(all_tools)}: {[t.name for t in all_tools]}"
 
     expected_names = {
-        "explore_dataset", "get_item_details",
-        "train_forecast_model", "predict_demand", "get_model_explanation",
-        "find_volatile_products", "simulate_demand_spike", "compare_stores",
-        "plot_sales_history", "plot_forecast_chart",
-        "plot_weekly_pattern_chart", "plot_volatility_chart",
+        "explore_dataset",
+        "get_item_details",
+        "train_forecast_model",
+        "predict_demand",
+        "get_model_explanation",
+        "find_volatile_products",
+        "simulate_demand_spike",
+        "compare_stores",
+        "plot_sales_history",
+        "plot_forecast_chart",
+        "plot_weekly_pattern_chart",
+        "plot_volatility_chart",
+        "plot_feature_importance_chart",
+        "plot_demand_distribution_chart",
+        "plot_store_comparison_chart",
     }
 
     actual_names = {t.name for t in all_tools}
@@ -62,12 +72,12 @@ def test_all_tools_registered():
     assert not missing, f"Missing tools: {missing}"
     assert not extra, f"Unexpected tools: {extra}"
 
-    print(f"  ✓ All 12 tools registered:")
+    print(f"  ✓ All 15 tools registered:")
     for t in all_tools:
         assert t.name, f"Tool missing name"
-        assert t.description and len(t.description) > 50, (
-            f"Tool '{t.name}' description too short for the LLM"
-        )
+        assert (
+            t.description and len(t.description) > 50
+        ), f"Tool '{t.name}' description too short for the LLM"
         print(f"    • {t.name}")
 
 

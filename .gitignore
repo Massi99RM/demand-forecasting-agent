@@ -1,15 +1,24 @@
 # Environment and API keys
 .env
 
+# Virtual environments
+venv/
+.venv/
+env/
+
 # Dataset 
 data/raw/train.csv
 
-# Agent-generated charts 
-outputs/*.png
+# Agent-generated charts and exports
+outputs/*
+!outputs/.gitkeep
 
 # Python cache
 __pycache__/
 *.pyc
+
+# Test backup files
+data/raw/train.csv.backup
 
 # IDE settings
 .vscode/

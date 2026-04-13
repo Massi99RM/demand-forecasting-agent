@@ -14,9 +14,9 @@ class Config:
 
     # ── Paths ────────────────────────────────────────────────────────────
     PROJECT_ROOT: Path = Path(__file__).resolve().parent
-    DATA_DIR: Path = field(default=None)       # set in __post_init__
+    DATA_DIR: Path = field(default=None)  # set in __post_init__
     RAW_DATA_PATH: Path = field(default=None)  # set in __post_init__
-    OUTPUT_DIR: Path = field(default=None)      # set in __post_init__
+    OUTPUT_DIR: Path = field(default=None)  # set in __post_init__
 
     # ── Train / Test Split ───────────────────────────────────────────────
     # The dataset spans 2013-01-01 to 2017-12-31 (5 years).
@@ -84,8 +84,8 @@ class Config:
                 "colsample_bytree": 0.8,
                 "early_stopping_rounds": 50,
                 "random_state": 42,
-                "n_jobs": -1,           # use all CPU cores
-                "verbosity": 0,         # suppress XGBoost warnings
+                "n_jobs": -1,  # use all CPU cores
+                "verbosity": 0,  # suppress XGBoost warnings
             },
         )
 

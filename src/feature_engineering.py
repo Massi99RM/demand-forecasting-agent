@@ -1,9 +1,10 @@
 """
 Feature Engineering — transform raw data into model-ready features.
 """
+
 import sys
 from pathlib import Path
- 
+
 # Ensure the project root is on Python's path.
 _project_root = str(Path(__file__).resolve().parent.parent)
 if _project_root not in sys.path:
@@ -45,12 +46,12 @@ def add_time_features(df: pd.DataFrame) -> pd.DataFrame:
 
     df = df.copy()  # avoid modifying the caller's DataFrame
 
-    df["day_of_week"] = date_col.dt.dayofweek        # 0-6
-    df["day_of_month"] = date_col.dt.day              # 1-31
-    df["month"] = date_col.dt.month                   # 1-12
+    df["day_of_week"] = date_col.dt.dayofweek  # 0-6
+    df["day_of_month"] = date_col.dt.day  # 1-31
+    df["month"] = date_col.dt.month  # 1-12
     df["week_of_year"] = date_col.dt.isocalendar().week.astype(int)  # 1-52
-    df["quarter"] = date_col.dt.quarter               # 1-4
-    df["year"] = date_col.dt.year                     # e.g., 2017
+    df["quarter"] = date_col.dt.quarter  # 1-4
+    df["year"] = date_col.dt.year  # e.g., 2017
     df["is_weekend"] = (date_col.dt.dayofweek >= 5).astype(int)  # 0 or 1
     df["is_month_start"] = date_col.dt.is_month_start.astype(int)
     df["is_month_end"] = date_col.dt.is_month_end.astype(int)
@@ -58,7 +59,10 @@ def add_time_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_lag_features(df: pd.DataFrame,lags: tuple = None,) -> pd.DataFrame:
+def add_lag_features(
+    df: pd.DataFrame,
+    lags: tuple = None,
+) -> pd.DataFrame:
     """
     Add lagged sales values as features.
 
@@ -93,7 +97,10 @@ def add_lag_features(df: pd.DataFrame,lags: tuple = None,) -> pd.DataFrame:
     return df
 
 
-def add_rolling_features(df: pd.DataFrame,windows: tuple = None,) -> pd.DataFrame:
+def add_rolling_features(
+    df: pd.DataFrame,
+    windows: tuple = None,
+) -> pd.DataFrame:
     """
     Add rolling mean and rolling std features.
 
@@ -126,9 +133,13 @@ def add_rolling_features(df: pd.DataFrame,windows: tuple = None,) -> pd.DataFram
         # soon as it has at least 1 data point (instead of returning
         # NaN until the full window is filled). This reduces the number
         # of NaN rows lost at the start of each series.
-        df[f"sales_rolling_mean_{window}"] = grouped.transform(lambda x: x.rolling(window=window, min_periods=1).mean().shift(1))  
+        df[f"sales_rolling_mean_{window}"] = grouped.transform(
+            lambda x: x.rolling(window=window, min_periods=1).mean().shift(1)
+        )
 
-        df[f"sales_rolling_std_{window}"] = grouped.transform(lambda x: x.rolling(window=window, min_periods=1).std().shift(1))  
+        df[f"sales_rolling_std_{window}"] = grouped.transform(
+            lambda x: x.rolling(window=window, min_periods=1).std().shift(1)
+        )
 
     return df
 
@@ -269,9 +280,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
             f"This shouldn't happen — check feature engineering logic."
         )
 
-    feature_cols = [
-        c for c in df.columns if c not in CFG.EXCLUDE_COLS
-    ]
+    feature_cols = [c for c in df.columns if c not in CFG.EXCLUDE_COLS]
     print(f"  Total features: {len(feature_cols)}")
     print(f"  Feature names: {feature_cols}")
     print(f"  Final shape: {df.shape}")
@@ -296,16 +305,14 @@ def get_feature_names(df: pd.DataFrame) -> list[str]:
     list of str
         Column names to use as model input features.
     """
-    return [
-        col for col in df.columns
-        if col not in CFG.EXCLUDE_COLS
-    ]
+    return [col for col in df.columns if col not in CFG.EXCLUDE_COLS]
 
 
 # ── Quick self-test ──────────────────────────────────────────────────
 if __name__ == "__main__":
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
     from src.data_loader import load_data

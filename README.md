@@ -38,7 +38,7 @@ User (natural language question)
 └──┬───┘└──┬───┘└──┬───┘└──┬───┘
    └───────┴───────┴───────┘
            │
-    ┌──────┴──────────────┐
+    ┌──────┴───────────────┐
     │   ML Pipeline        │
     │  (pure Python)       │
     │                      │
@@ -59,7 +59,7 @@ User (natural language question)
 - **Natural language Q&A** — Ask questions like "predict demand for item 5 in store 1" or "which products are hardest to forecast?"
 - **What-if simulation** — Simulate demand spikes and see inventory shortfall impact
 - **Store comparison** — Compare demand patterns across locations for inventory allocation
-- **Visualization** — Generates sales trends, forecast vs actual charts, weekly patterns, and volatility rankings
+- **Visualization** — Generates sales trends, forecast vs actual charts, weekly patterns, volatility rankings, feature importance, demand distributions, and store comparisons
 
 ## Tech Stack
 
@@ -118,9 +118,9 @@ demand-forecasting-agent/
 │   ├── data_loader.py           # Load and validate raw data
 │   ├── feature_engineering.py   # Feature creation (lags, rolling, holidays)
 │   ├── model.py                 # XGBoost training, prediction, evaluation
-│   ├── visualizations.py        # Chart generation (7 plot types)
+│   ├── visualizations.py        # Chart generation 
 │   │
-│   ├── tools/                   # LangChain tool wrappers
+│   ├── tools/                   # Agent tool wrappers (@tool decorator)
 │   │   ├── __init__.py          # Tool registry (all_tools list)            
 │   │   ├── data_tools.py        # explore_dataset, get_item_details
 │   │   ├── forecast_tools.py    # train_forecast_model, predict_demand
@@ -151,7 +151,7 @@ demand-forecasting-agent/
 - Python 3.10+
 - An Anthropic API key ([get one here](https://console.anthropic.com/))
 
-> **Note:** The agent is configured for Claude (Anthropic). The agent architecture is LLM-agnostic — switching to other APIs requires only changing the `get_llm()` function in `main.py` and the env file.
+> **Note:** The agent is configured for Claude (Anthropic). The agent architecture is LLM-agnostic — switching to other APIs requires changing the get_llm() function in main.py, swapping the LangChain provider package, and updating the env file.
 
 ### Setup
 
