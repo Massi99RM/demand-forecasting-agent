@@ -17,6 +17,25 @@ Supply chain planning depends on accurate demand forecasts. Traditional approach
 
 Instead of a static forecasting script, this project implements a **reasoning agent** that decides what to do based on the question asked. Ask "which products are most volatile?" and it runs a volatility analysis. Ask "what if demand spikes 30%?" and it simulates the scenario with inventory impact calculations. The agent chains multiple tools together when needed — finding the hardest product to forecast, predicting its demand, and generating a chart, all from a single request.
 
+## Demos
+
+Three short videos demonstrating different agent capabilities. Each starts from a fresh process to show the full workflow.
+
+### 1. Core Workflow
+The end-to-end pipeline: load data → train model → predict → visualize.
+
+[📹 Watch demo](https://github.com/Massi99RM/demand-forecasting-agent/releases/tag/demo1)
+
+### 2. Analytical Investigation
+A real supply chain investigation: identify volatile products → compare across stores → simulate demand spike → visualize.
+
+[📹 Watch demo](https://github.com/Massi99RM/demand-forecasting-agent/releases/tag/demo2)
+
+### 3. Autonomous Tool Chaining
+One prompt, three chained tool calls. The agent finds the hardest product to forecast, predicts its demand, and generates the chart — all from a single ambiguous request.
+
+[📹 Watch demo](https://github.com/Massi99RM/demand-forecasting-agent/releases/tag/demo3)
+
 ## Architecture
 
 ```
