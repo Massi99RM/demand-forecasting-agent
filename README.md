@@ -17,6 +17,18 @@ Supply chain planning depends on accurate demand forecasts. Traditional approach
 
 Instead of a static forecasting script, this project implements a **reasoning agent** that decides what to do based on the question asked. Ask "which products are most volatile?" and it runs a volatility analysis. Ask "what if demand spikes 30%?" and it simulates the scenario with inventory impact calculations. The agent chains multiple tools together when needed — finding the hardest product to forecast, predicting its demand, and generating a chart, all from a single request.
 
+## Roadmap
+
+This project is actively being developed into a production-ready application.
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| ✅ Phase 0 | Core agent — data exploration, forecasting, analysis, visualization | Complete |
+| 🔄 Phase 1 | **FastAPI** — wrap the agent behind an HTTP endpoint; query via REST | In progress |
+| ⏳ Phase 2 | **RAG** — add document retrieval (ChromaDB) so the agent can search product descriptions and client docs | Planned |
+| ⏳ Phase 3 | **Docker** — containerize everything; one-command setup for anyone | Planned |
+| ⏳ Phase 4 | **Production polish** — architecture diagram, clean commit history, deployment-ready README | Planned |
+
 ## Demos
 
 Three short videos demonstrating different agent capabilities. Each starts from a fresh process to show the full workflow.
